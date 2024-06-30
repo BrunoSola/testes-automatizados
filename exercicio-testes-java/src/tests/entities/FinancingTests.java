@@ -73,4 +73,11 @@ public class FinancingTests {
             financing.setMonths(79);
         });
     }
+
+    @Test
+    public void entryShouldCalculateEntryCorrectly(){
+        Financing financing = FinancingFactory.createFinancingValitData();
+
+        Assertions.assertEquals(20000.0, financing.entry());
+    }
 }
