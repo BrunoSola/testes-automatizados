@@ -48,12 +48,29 @@ public class FinancingTests {
 
         Assertions.assertEquals(2001.0, financing.getIncome());
     }
-    
+
     @Test
     public void setIncomeShouldThrowIllegalArgumentExceptionWhenInvalidData(){
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             Financing financing = FinancingFactory.createFinancingValitData();
             financing.setIncome(1999.9);
+        });
+    }
+
+    @Test
+    public void setMonthsShouldUpdateDataWhenValidData(){
+        Financing financing = FinancingFactory.createFinancingValitData();
+
+        financing.setMonths(81);
+
+        Assertions.assertEquals(81, financing.getMonths());
+    }
+
+    @Test
+    public void setMonthsShouldThrowIllegalArgumentExceptionWhenInvalidData(){
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            Financing financing = FinancingFactory.createFinancingValitData();
+            financing.setMonths(79);
         });
     }
 }
