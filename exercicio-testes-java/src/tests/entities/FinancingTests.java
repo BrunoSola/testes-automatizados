@@ -80,4 +80,11 @@ public class FinancingTests {
 
         Assertions.assertEquals(20000.0, financing.entry());
     }
+
+    @Test
+    public void quotaShouldCalculateQuotaCorrectly(){
+        Financing financing = FinancingFactory.createFinancingValitData();
+
+        Assertions.assertEquals(1000.0, financing.quota());
+    }
 }
