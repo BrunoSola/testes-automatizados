@@ -9,7 +9,7 @@ public class FinancingTests {
 
     @Test
     public void constructorShouldCreateObjectWhenValidData(){
-        Financing financing = FinancingFactory.createFinancing();
+        Financing financing = FinancingFactory.createFinancingValitData();
 
         Assertions.assertEquals(100000.0, financing.getTotalAmount());
         Assertions.assertEquals(2000.0, financing.getIncome());
@@ -19,7 +19,7 @@ public class FinancingTests {
     @Test
     public void constructorShouldThrowIllegalArgumentExceptionWhenInvalidData(){
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            Financing financing = new Financing(100000.0, 2000.0,20);
+            Financing financing = FinancingFactory.createFinancingInvalitData();
         });
     }
 }
