@@ -39,4 +39,21 @@ public class FinancingTests {
             financing.setTotalAmount(100001.0);
         });
     }
+
+    @Test
+    public void setIncomeShouldUpdateDataWhenValidData(){
+        Financing financing = FinancingFactory.createFinancingValitData();
+
+        financing.setIncome(2001.0);
+
+        Assertions.assertEquals(2001.0, financing.getIncome());
+    }
+    
+    @Test
+    public void setIncomeShouldThrowIllegalArgumentExceptionWhenInvalidData(){
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            Financing financing = FinancingFactory.createFinancingValitData();
+            financing.setIncome(1999.9);
+        });
+    }
 }
