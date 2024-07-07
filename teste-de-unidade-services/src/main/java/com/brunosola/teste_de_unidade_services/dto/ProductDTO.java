@@ -1,6 +1,7 @@
 package com.brunosola.teste_de_unidade_services.dto;
 
 import com.brunosola.teste_de_unidade_services.entities.Product;
+import jakarta.persistence.Column;
 
 public class ProductDTO {
 

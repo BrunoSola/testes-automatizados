@@ -1,11 +1,17 @@
 package com.brunosola.teste_de_unidade_services.entities;
 
+import jakarta.persistence.*;
+
 import java.util.Objects;
 
+@Entity
 public class Product {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
+    @Column(columnDefinition = "TEXT")
     private String description;
     private Double price;
 
