@@ -15,7 +15,7 @@ import java.net.URI;
 @RestController
 @RequestMapping(value = "/products")
 public class ProductController {
-    
+
     @Autowired
     private ProductService service;
 
@@ -26,19 +26,19 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<ProductDTO>> findAll(@RequestParam(name = "name", defaultValue = "") String name, Pageable pageable){
-        return ResponseEntity.ok(service.findAll(name, pageable));
+    public ResponseEntity<Page<ProductDTO>> findAll( Pageable pageable){
+        return ResponseEntity.ok(service.findAll(pageable));
     }
 
     @PostMapping
-    public ResponseEntity<ProductDTO> insert(@Valid @RequestBody ProductDTO dto){
+    public ResponseEntity<ProductDTO> insert(@RequestBody ProductDTO dto){
         dto = service.insert(dto);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(dto.getId()).toUri();
         return ResponseEntity.created(uri).body(dto);
     }
 
     @PutMapping(value = "/{id}")
-    public ResponseEntity<ProductDTO> update(@PathVariable Long id, @Valid @RequestBody ProductDTO dto) {
+    public ResponseEntity<ProductDTO> update(@PathVariable Long id, @RequestBody ProductDTO dto) {
         return ResponseEntity.ok(service.update(id,dto));
     }
 
