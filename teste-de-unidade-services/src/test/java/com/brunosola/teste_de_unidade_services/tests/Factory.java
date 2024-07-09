@@ -15,9 +15,4 @@ public class Factory {
         );
         return product;
     }
-
-    public static ProductDTO createProductDTO(){
-        Product product = createProduct();
-        return new ProductDTO(product);
-    }
 }

@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -34,18 +35,20 @@ public class ProductServiceTests {
     private PageImpl<Product> productPage;
     private Product product;
     private ProductDTO productDTO;
-
+    private ModelMapper mapper;
 
     @BeforeEach
     void setUp(){
         product = Factory.createProduct();
-        productDTO = Factory.createProductDTO();
+        productDTO = new ProductDTO(3L,"PC GAMER", "Processador Ryzen 7 5700X3D", 10000.00);
         productPage = new PageImpl<>(List.of(product));
+        mapper = new ModelMapper();
 
         doThrow(ResourceNotFoundException.class).when(productRepository).findById(2L);
 
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
         when(productRepository.findAll((Pageable) any())).thenReturn(productPage);
+        when(productRepository.save(product)).thenReturn(product);
     }
 
     @Test
@@ -74,5 +77,18 @@ public class ProductServiceTests {
 
         Assertions.assertNotNull(products);
         verify(productRepository).findAll(pageable);
+    }
+
+    @Test
+    public void inserShouldInserNewProductWhenExistingId(){
+        mapper.map(productDTO, product);
+        ProductDTO prod = productService.insert(productDTO);
+
+        Assertions.assertNotNull(product);
+        Assertions.assertEquals(3L, prod.getId());
+        Assertions.assertEquals(productDTO.getName(), prod.getName());
+        Assertions.assertEquals(productDTO.getDescription(), prod.getDescription());
+        Assertions.assertEquals(productDTO.getPrice(), prod.getPrice());
+        verify(productRepository).save(product);
     }
 }
