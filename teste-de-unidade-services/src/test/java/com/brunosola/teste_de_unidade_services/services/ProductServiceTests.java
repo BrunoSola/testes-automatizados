@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.modelmapper.MappingException;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -40,15 +41,16 @@ public class ProductServiceTests {
     @BeforeEach
     void setUp(){
         product = Factory.createProduct();
-        productDTO = new ProductDTO(3L,"PC GAMER", "Processador Ryzen 7 5700X3D", 10000.00);
         productPage = new PageImpl<>(List.of(product));
         mapper = new ModelMapper();
 
         doThrow(ResourceNotFoundException.class).when(productRepository).findById(2L);
+        doThrow(ResourceNotFoundException.class).when(productRepository).getReferenceById(2L);
 
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
         when(productRepository.findAll((Pageable) any())).thenReturn(productPage);
         when(productRepository.save(product)).thenReturn(product);
+        when(productRepository.getReferenceById(1L)).thenReturn(product);
     }
 
     @Test
@@ -81,14 +83,41 @@ public class ProductServiceTests {
 
     @Test
     public void inserShouldInserNewProductWhenExistingId(){
+        productDTO = new ProductDTO(3L,"PC GAMER", "Processador Ryzen 7 5700X3D", 10000.00);
         mapper.map(productDTO, product);
         ProductDTO prod = productService.insert(productDTO);
 
-        Assertions.assertNotNull(product);
+        Assertions.assertNotNull(prod);
         Assertions.assertEquals(3L, prod.getId());
         Assertions.assertEquals(productDTO.getName(), prod.getName());
         Assertions.assertEquals(productDTO.getDescription(), prod.getDescription());
         Assertions.assertEquals(productDTO.getPrice(), prod.getPrice());
         verify(productRepository).save(product);
+    }
+
+    @Test
+    public void updateShouldUpdateProductWhenExistingId(){
+        //Somente para confirmar que product está vindo conforme iniciado
+        Assertions.assertEquals(1L, product.getId());
+        Assertions.assertEquals("Iphone 15 PRO MAX", product.getName());
+
+        productDTO = new ProductDTO(1L,"PC GAMER", "Processador Ryzen 7 5700X3D", 10000.00);
+        mapper.getConfiguration().setSkipNullEnabled(true);
+        mapper.map(productDTO, product);
+        ProductDTO prod = productService.update(1L, productDTO);
+
+        Assertions.assertNotNull(prod);
+        Assertions.assertEquals(1L, prod.getId());
+        Assertions.assertEquals("PC GAMER", prod.getName());
+        Assertions.assertEquals(productDTO.getDescription(), prod.getDescription());
+        Assertions.assertEquals(productDTO.getPrice(), prod.getPrice());
+        verify(productRepository).save(product);
+    }
+
+    @Test
+    public void updateShouldThrowResourceNotFoundExceptionWhenNonExistingId(){
+        Assertions.assertThrows(ResourceNotFoundException.class,
+                () -> productService.update(2L, productDTO));
+        verify(productRepository).getReferenceById(2L);
     }
 }
