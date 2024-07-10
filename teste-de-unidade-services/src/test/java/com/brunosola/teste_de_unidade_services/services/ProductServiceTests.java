@@ -36,6 +36,7 @@ public class ProductServiceTests {
     private ProductRepository productRepository;
 
     private Long existingId;
+    private Long nonExistingId;
     private PageImpl<Product> productPage;
     private Product product;
     private ProductDTO productDTO;
@@ -44,41 +45,42 @@ public class ProductServiceTests {
     @BeforeEach
     void setUp(){
         existingId = 1L;
+        nonExistingId = 2L;
         product = Factory.createProduct();
         productPage = new PageImpl<>(List.of(product));
         mapper = new ModelMapper();
 
-        doThrow(ResourceNotFoundException.class).when(productRepository).findById(2L);
-        doThrow(ResourceNotFoundException.class).when(productRepository).getReferenceById(2L);
+        doThrow(ResourceNotFoundException.class).when(productRepository).findById(nonExistingId);
+        doThrow(ResourceNotFoundException.class).when(productRepository).getReferenceById(nonExistingId);
         doNothing().when(productRepository).deleteById(existingId);
         doThrow(DataIntegrityViolationException.class).when(productRepository).deleteById(3L);
 
-        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+        when(productRepository.findById(existingId)).thenReturn(Optional.of(product));
         when(productRepository.findAll((Pageable) any())).thenReturn(productPage);
         when(productRepository.save(product)).thenReturn(product);
-        when(productRepository.getReferenceById(1L)).thenReturn(product);
+        when(productRepository.getReferenceById(existingId)).thenReturn(product);
         when(productRepository.existsById(existingId)).thenReturn(true);
-        when(productRepository.existsById(2L)).thenReturn(false);
+        when(productRepository.existsById(nonExistingId)).thenReturn(false);
         when(productRepository.existsById(3L)).thenReturn(true);
     }
 
     @Test
     public void findByIdShouldReturnProductWhenExistingId(){
-        productDTO = productService.findById(1L);
+        productDTO = productService.findById(existingId);
 
         Assertions.assertNotNull(productDTO);
         Assertions.assertEquals("Iphone 15 PRO MAX", productDTO.getName());
         Assertions.assertEquals(7000.00, productDTO.getPrice());
         Assertions.assertEquals(product.getDescription(), productDTO.getDescription());
 
-        verify(productRepository).findById(1L);
+        verify(productRepository).findById(existingId);
     }
 
     @Test
     public void findByIdShouldThrowResourceNotFoundExceptionWhenNonExistingId(){
         Assertions.assertThrows(ResourceNotFoundException.class,
-                () -> productService.findById(2L));
-        verify(productRepository).findById(2L);
+                () -> productService.findById(nonExistingId));
+        verify(productRepository).findById(nonExistingId);
     }
 
     @Test
@@ -113,7 +115,7 @@ public class ProductServiceTests {
         productDTO = new ProductDTO(1L,"PC GAMER", "Processador Ryzen 7 5700X3D", 10000.00);
         mapper.getConfiguration().setSkipNullEnabled(true);
         mapper.map(productDTO, product);
-        ProductDTO prod = productService.update(1L, productDTO);
+        ProductDTO prod = productService.update(existingId, productDTO);
 
         Assertions.assertNotNull(prod);
         Assertions.assertEquals(1L, prod.getId());
@@ -126,19 +128,19 @@ public class ProductServiceTests {
     @Test
     public void updateShouldThrowResourceNotFoundExceptionWhenNonExistingId(){
         Assertions.assertThrows(ResourceNotFoundException.class,
-                () -> productService.update(2L, productDTO));
-        verify(productRepository).getReferenceById(2L);
+                () -> productService.update(nonExistingId, productDTO));
+        verify(productRepository).getReferenceById(nonExistingId);
     }
 
     @Test
     public void deleteShouldDoNothingWhenExistingId(){
-        Assertions.assertDoesNotThrow(() ->  productService.delete(1L));
+        Assertions.assertDoesNotThrow(() ->  productService.delete(existingId));
     }
 
     @Test
     public void deleteShouldThrowResourceNotFoundExceptionWhenNonExistingId(){
         Assertions.assertThrows(ResourceNotFoundException.class,
-                () -> productService.delete(2L));
+                () -> productService.delete(nonExistingId));
     }
 
     @Test
