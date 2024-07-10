@@ -3,6 +3,7 @@ package com.brunosola.teste_de_unidade_services.services;
 import com.brunosola.teste_de_unidade_services.dto.ProductDTO;
 import com.brunosola.teste_de_unidade_services.entities.Product;
 import com.brunosola.teste_de_unidade_services.repositories.ProductRepository;
+import com.brunosola.teste_de_unidade_services.services.exceptions.DatabaseException;
 import com.brunosola.teste_de_unidade_services.services.exceptions.ResourceNotFoundException;
 import com.brunosola.teste_de_unidade_services.tests.Factory;
 import org.junit.jupiter.api.Assertions;
@@ -13,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.modelmapper.MappingException;
 import org.modelmapper.ModelMapper;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -33,6 +35,7 @@ public class ProductServiceTests {
     @Mock
     private ProductRepository productRepository;
 
+    private Long existingId;
     private PageImpl<Product> productPage;
     private Product product;
     private ProductDTO productDTO;
@@ -40,17 +43,23 @@ public class ProductServiceTests {
 
     @BeforeEach
     void setUp(){
+        existingId = 1L;
         product = Factory.createProduct();
         productPage = new PageImpl<>(List.of(product));
         mapper = new ModelMapper();
 
         doThrow(ResourceNotFoundException.class).when(productRepository).findById(2L);
         doThrow(ResourceNotFoundException.class).when(productRepository).getReferenceById(2L);
+        doNothing().when(productRepository).deleteById(existingId);
+        doThrow(DataIntegrityViolationException.class).when(productRepository).deleteById(3L);
 
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
         when(productRepository.findAll((Pageable) any())).thenReturn(productPage);
         when(productRepository.save(product)).thenReturn(product);
         when(productRepository.getReferenceById(1L)).thenReturn(product);
+        when(productRepository.existsById(existingId)).thenReturn(true);
+        when(productRepository.existsById(2L)).thenReturn(false);
+        when(productRepository.existsById(3L)).thenReturn(true);
     }
 
     @Test
@@ -119,5 +128,22 @@ public class ProductServiceTests {
         Assertions.assertThrows(ResourceNotFoundException.class,
                 () -> productService.update(2L, productDTO));
         verify(productRepository).getReferenceById(2L);
+    }
+
+    @Test
+    public void deleteShouldDoNothingWhenExistingId(){
+        Assertions.assertDoesNotThrow(() ->  productService.delete(1L));
+    }
+
+    @Test
+    public void deleteShouldThrowResourceNotFoundExceptionWhenNonExistingId(){
+        Assertions.assertThrows(ResourceNotFoundException.class,
+                () -> productService.delete(2L));
+    }
+
+    @Test
+    public void deleteShouldThrowDatabaseExceptionWhenDependentId(){
+        Assertions.assertThrows(DatabaseException.class,
+                () -> productService.delete(3L));
     }
 }
