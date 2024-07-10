@@ -50,15 +50,15 @@ public class ProductServiceTests {
         productPage = new PageImpl<>(List.of(product));
         mapper = new ModelMapper();
 
-        doThrow(ResourceNotFoundException.class).when(productRepository).findById(nonExistingId);
-        doThrow(ResourceNotFoundException.class).when(productRepository).getReferenceById(nonExistingId);
         doNothing().when(productRepository).deleteById(existingId);
         doThrow(DataIntegrityViolationException.class).when(productRepository).deleteById(3L);
 
         when(productRepository.findById(existingId)).thenReturn(Optional.of(product));
+        when(productRepository.findById(nonExistingId)).thenThrow(ResourceNotFoundException.class);
         when(productRepository.findAll((Pageable) any())).thenReturn(productPage);
         when(productRepository.save(product)).thenReturn(product);
         when(productRepository.getReferenceById(existingId)).thenReturn(product);
+        when(productRepository.getReferenceById(nonExistingId)).thenThrow(ResourceNotFoundException.class);
         when(productRepository.existsById(existingId)).thenReturn(true);
         when(productRepository.existsById(nonExistingId)).thenReturn(false);
         when(productRepository.existsById(3L)).thenReturn(true);
