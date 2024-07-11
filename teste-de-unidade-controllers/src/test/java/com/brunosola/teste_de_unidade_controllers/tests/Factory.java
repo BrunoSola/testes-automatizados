@@ -1,5 +1,6 @@
 package com.brunosola.teste_de_unidade_controllers.tests;
 
+import com.brunosola.teste_de_unidade_controllers.dto.ProductDTO;
 import com.brunosola.teste_de_unidade_controllers.entities.Product;
 
 public class Factory {
@@ -13,5 +14,10 @@ public class Factory {
                 7000.00
         );
         return product;
+    }
+
+    public static ProductDTO createProductDTO(){
+        Product product = createProduct();
+        return new ProductDTO(product);
     }
 }
