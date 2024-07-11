@@ -2,6 +2,7 @@ package com.brunosola.teste_de_unidade_controllers.controllers;
 
 import com.brunosola.teste_de_unidade_controllers.dto.ProductDTO;
 import com.brunosola.teste_de_unidade_controllers.services.ProductService;
+import com.brunosola.teste_de_unidade_controllers.services.exceptions.DatabaseException;
 import com.brunosola.teste_de_unidade_controllers.services.exceptions.ResourceNotFoundException;
 import com.brunosola.teste_de_unidade_controllers.tests.Factory;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,7 +19,7 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -37,6 +38,7 @@ public class ProductControllerTests {
 
     private Long existingId;
     private Long nonExistingId;
+    private Long dependentId;
     private ProductDTO productDTO;
     private PageImpl<ProductDTO> page;
 
@@ -44,6 +46,7 @@ public class ProductControllerTests {
     void setUp() throws Exception{
         existingId = 1L;
         nonExistingId = 2L;
+        dependentId = 3L;
         productDTO = Factory.createProductDTO();
         page = new PageImpl<>(List.of(productDTO));
 
@@ -53,6 +56,10 @@ public class ProductControllerTests {
         when(productService.update(eq(existingId), any())).thenReturn(productDTO);
         when(productService.update(eq(nonExistingId), any())).thenThrow(ResourceNotFoundException.class);
         when(productService.insert(any())).thenReturn(productDTO);
+
+        doNothing().when(productService).delete(existingId);
+        doThrow(ResourceNotFoundException.class).when(productService).delete(nonExistingId);
+        doThrow(DatabaseException.class).when(productService).delete(dependentId);
     }
 
     @Test
@@ -120,5 +127,26 @@ public class ProductControllerTests {
                 .andExpect(jsonPath("$.name").exists())
                 .andExpect(jsonPath("$.description").exists())
                 .andExpect(jsonPath("$.price").exists());
+    }
+
+    @Test
+    public void deleteShouldDoNothingWhenIdExists() throws Exception {
+        mockMvc.perform(delete("/products/{id}", existingId)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    public void deleteShouldReturnNotFoundWhenIdDoesNotExist() throws Exception {
+        mockMvc.perform(delete("/products/{id}", nonExistingId)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void deleteShouldReturnBadRequestWhenIdDependent() throws Exception {
+        mockMvc.perform(delete("/products/{id}", dependentId)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
     }
 }
