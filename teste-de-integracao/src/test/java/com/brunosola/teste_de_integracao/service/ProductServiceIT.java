@@ -84,4 +84,19 @@ public class ProductServiceIT {
         Assertions.assertEquals("MacBook Air", result.getContent().get(2).getName());
         Assertions.assertEquals("MacBook Pro Apple 14", result.getContent().get(3).getName());
     }
+
+    @Test
+    public void findByIdShouldReturnProductWhenIdExists() {
+        ProductDTO result = productService.findById(existingId);
+
+        Assertions.assertEquals("Iphone 15 PRO", result.getName());
+        Assertions.assertEquals(productRepository.getReferenceById(existingId).getDescription(), result.getDescription());
+        Assertions.assertEquals(productRepository.findById(existingId).get().getPrice(), result.getPrice());
+    }
+
+    @Test
+    public void findByIdShouldThrowResourceNotFoundExceptionWhenIdDoesNotExist(){
+        Assertions.assertThrows(ResourceNotFoundException.class,
+                () -> productService.findById(nonExistingID));
+    }
 }
