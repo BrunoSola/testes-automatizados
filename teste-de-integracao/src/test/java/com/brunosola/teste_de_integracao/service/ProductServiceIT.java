@@ -99,4 +99,16 @@ public class ProductServiceIT {
         Assertions.assertThrows(ResourceNotFoundException.class,
                 () -> productService.findById(nonExistingID));
     }
+
+    @Test
+    public void insertShouldInsertNewProduct() {
+        ProductDTO dto = new ProductDTO(5L, "Iphone 14 PRO", "O Apple iPhone 14 Pro é um smartphone iOS com características inovadoras que o tornam uma excelente opção para qualquer tipo de utilização, representando um dos melhores dispositivos móveis já feitos. A tela de 6.1 polegadas coloca esse Apple no topo de sua categoria. A resolução também é alta: 2556x1179 pixel. As funcionalidades oferecidas pelo Apple iPhone 14 Pro são muitas e todas top de linha. Começando pelo 5G que permite a transferência de dados e excelente navegação na internet, além de conectividade Wi-fi e GPS presente no aparelho. Tem também leitor multimídia, videoconferência, e bluetooth. Enfatizamos a excelente memória interna de 1000 GB mas sem a possibilidade de expansão.", 3900.00);
+        ProductDTO result = productService.insert(dto);
+
+        Assertions.assertEquals(5L, result.getId());
+        Assertions.assertEquals(dto.getName(), result.getName());
+        Assertions.assertEquals(dto.getDescription(), result.getDescription());
+        Assertions.assertEquals(dto.getPrice(), result.getPrice());
+        Assertions.assertEquals(countTotalProduct + 1, productRepository.count());
+    }
 }
