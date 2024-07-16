@@ -1,5 +1,8 @@
 package com.brunosola.teste_de_integracao_web.controllers;
 
+import com.brunosola.teste_de_integracao_web.dto.ProductDTO;
+import com.brunosola.teste_de_integracao_web.entities.Product;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +22,9 @@ public class ProductControllerIT {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     private Long existingId;
     private Long nonExistingID;
@@ -54,6 +60,35 @@ public class ProductControllerIT {
     @Test
     public void findByIdShouldReturnNotFoundWhenIdDoesNotExist() throws Exception {
         mockMvc.perform(get("/products/{id}", nonExistingID)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void updateShouldReturnProductDTOWhenIdExists() throws Exception {
+        ProductDTO productDTO = new ProductDTO(existingId, "Iphone 14 PRO","O Apple iPhone 14 Pro é um smartphone iOS com características inovadoras que o tornam uma excelente opção para qualquer tipo de utilização, representando um dos melhores dispositivos móveis já feitos. A tela de 6.1 polegadas coloca esse Apple no topo de sua categoria. A resolução também é alta: 2556x1179 pixel. As funcionalidades oferecidas pelo Apple iPhone 14 Pro são muitas e todas top de linha. Começando pelo 5G que permite a transferência de dados e excelente navegação na internet, além de conectividade Wi-fi e GPS presente no aparelho. Tem também leitor multimídia, videoconferência, e bluetooth. Enfatizamos a excelente memória interna de 1024 GB mas sem a possibilidade de expansão.A excelência deste Apple iPhone 14 Pro é completada por uma câmera de 48 megapixels que permite tirar fotos fantásticas com uma resolução de 8000x6000 pixels e gravar vídeos em 4K a espantosa resolução de 3840x2160 pixels. A espessura de 8.3 milímetros é realmente ótima e torna o Apple iPhone 14 Pro ainda mais espetacular.", 4500.00);
+        String jsonBody = objectMapper.writeValueAsString(productDTO);
+
+        mockMvc.perform(put("/products/{id}", existingId)
+                    .content(jsonBody)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.name").value(productDTO.getName()))
+                .andExpect(jsonPath("$.description").value(productDTO.getDescription()))
+                .andExpect(jsonPath("$.price").value(productDTO.getPrice()));
+
+    }
+
+    @Test
+    public void updateShouldReturnNotFoundWhenIdDoesNotExist() throws Exception {
+        ProductDTO productDTO = new ProductDTO(nonExistingID, "Iphone 14 PRO","O Apple iPhone 14 Pro é um smartphone iOS com características inovadoras que o tornam uma excelente opção para qualquer tipo de utilização, representando um dos melhores dispositivos móveis já feitos. A tela de 6.1 polegadas coloca esse Apple no topo de sua categoria. A resolução também é alta: 2556x1179 pixel. As funcionalidades oferecidas pelo Apple iPhone 14 Pro são muitas e todas top de linha. Começando pelo 5G que permite a transferência de dados e excelente navegação na internet, além de conectividade Wi-fi e GPS presente no aparelho. Tem também leitor multimídia, videoconferência, e bluetooth. Enfatizamos a excelente memória interna de 1024 GB mas sem a possibilidade de expansão.A excelência deste Apple iPhone 14 Pro é completada por uma câmera de 48 megapixels que permite tirar fotos fantásticas com uma resolução de 8000x6000 pixels e gravar vídeos em 4K a espantosa resolução de 3840x2160 pixels. A espessura de 8.3 milímetros é realmente ótima e torna o Apple iPhone 14 Pro ainda mais espetacular.", 4500.00);
+        String jsonBody = objectMapper.writeValueAsString(productDTO);
+
+        mockMvc.perform(put("/products/{id}", nonExistingID)
+                        .content(jsonBody)
+                        .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
