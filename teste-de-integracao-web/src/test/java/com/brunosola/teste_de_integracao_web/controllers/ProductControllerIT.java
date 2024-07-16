@@ -43,4 +43,18 @@ public class ProductControllerIT {
                 .andExpect(jsonPath("$.content[2].name").value("Iphone 15 PRO MAX"))
                 .andExpect(jsonPath("$.content[3].name").value("Iphone 15 PRO"));
     }
+
+    @Test
+    public void findByIdShouldReturnProductIdWhenIdExists() throws Exception {
+        mockMvc.perform(get("/products/{id}", existingId)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void findByIdShouldReturnNotFoundWhenIdDoesNotExist() throws Exception {
+        mockMvc.perform(get("/products/{id}", nonExistingID)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
 }
