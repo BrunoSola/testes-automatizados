@@ -2,12 +2,16 @@ package com.brunosola.teste_de_integracao_web.controllers;
 
 import com.brunosola.teste_de_integracao_web.dto.ProductDTO;
 import com.brunosola.teste_de_integracao_web.entities.Product;
+import com.brunosola.teste_de_integracao_web.repositories.ProductRepository;
+import com.brunosola.teste_de_integracao_web.services.exceptions.DatabaseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +29,9 @@ public class ProductControllerIT {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private ProductRepository productRepository;
 
     private Long existingId;
     private Long nonExistingID;
@@ -89,6 +96,20 @@ public class ProductControllerIT {
         mockMvc.perform(put("/products/{id}", nonExistingID)
                         .content(jsonBody)
                         .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void deleteShouldReturnNothingWhenIdExists() throws Exception {
+        mockMvc.perform(delete("/products/{id}", existingId)
+                    .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    public void deleteShouldReturnNotFoundWhenIdDoesNotExist() throws Exception {
+        mockMvc.perform(delete("/products/{id}", nonExistingID)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
