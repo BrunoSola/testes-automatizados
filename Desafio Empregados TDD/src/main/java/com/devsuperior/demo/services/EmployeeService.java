@@ -33,8 +33,7 @@ public class EmployeeService implements Serializable {
 
     @Transactional(readOnly = true)
     public Page<EmployeeDTO> findAllPaged(Pageable pageable) {
-        Pageable sortedByName = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("name"));
-        Page<Employee> employeeResult = employeeRepository.findAll(sortedByName);
+        Page<Employee> employeeResult = employeeRepository.findAllByOrderByNameAsc(pageable);
         return employeeResult.map(EmployeeDTO::new);
     }
 

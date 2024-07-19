@@ -4,7 +4,9 @@ import com.devsuperior.demo.dto.EmployeeDTO;
 import com.devsuperior.demo.services.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -19,7 +21,7 @@ public class EmployeeController {
     private EmployeeService employeeService;
 
     @GetMapping
-    public ResponseEntity<Page<EmployeeDTO>> findAllPaged(Pageable pageable) {
+    public ResponseEntity<Page<EmployeeDTO>> findAllPaged(Pageable pageable){
         return ResponseEntity.ok(employeeService.findAllPaged(pageable));
     }
 
