@@ -25,8 +25,7 @@ public class EmployeeService implements Serializable {
     private void copyDTOToEntity(EmployeeDTO employeeDTO, Employee entity) {
         entity.setName(employeeDTO.getName());
         entity.setEmail(employeeDTO.getEmail());
-        Department department = departmentRepository.getReferenceById(employeeDTO.getDepartmentId());
-        entity.setDepartment(department);
+        entity.setDepartment(departmentRepository.getReferenceById(employeeDTO.getDepartmentId()));
     }
 
     @Transactional(readOnly = true)
